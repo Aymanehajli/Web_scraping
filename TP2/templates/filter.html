@@ -1,0 +1,78 @@
+<!-- templates/filter.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Filtrer Doctolib CSV</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    form div { margin-bottom: 0.5em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.3em; }
+    th { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <h1>Filtrer les résultats Doctolib</h1>
+  <form method="post">
+    <div>
+      Spécialité :
+      <input name="specialty" value="{{ form.specialty }}">
+    </div>
+    <div>
+      Assurance :
+      <input name="assurance" value="{{ form.assurance }}">
+    </div>
+    <div>
+      Type consultation :
+      <select name="consultation_type">
+        <option value="">— Tous —</option>
+        <option value="visio" {% if form.consultation_type=='visio' %}selected{% endif %}>Visio</option>
+        <option value="présentiel" {% if form.consultation_type=='présentiel' %}selected{% endif %}>Présentiel</option>
+      </select>
+    </div>
+    <div>
+      Adresse contient :
+      <input name="address_include" value="{{ form.address_include }}">
+    </div>
+    <div>
+      Adresse exclut :
+      <input name="address_exclude" value="{{ form.address_exclude }}">
+    </div>
+    <div>
+      Prix min (€) :
+      <input type="number" step="0.01" name="min_price" value="{{ form.min_price }}">
+    </div>
+    <div>
+      Prix max (€) :
+      <input type="number" step="0.01" name="max_price" value="{{ form.max_price }}">
+    </div>
+    <button type="submit">Filtrer</button>
+  </form>
+
+  <h2>{{ count }} résultat{{ '' if count==1 else 's' }}</h2>
+  {% if rows %}
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th><th>Spécialité</th><th>Adresse</th><th>Assurance</th>
+        <th>Disponibilités</th><th>Type</th><th>Tarifs</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td>{{ r['Nom'] }}</td>
+        <td>{{ r['Spécialité'] }}</td>
+        <td>{{ r['Adresse'] }}</td>
+        <td>{{ r['Assurance'] }}</td>
+        <td>{{ r['Disponibilités'] }}</td>
+        <td>{{ r['Type de consultation'] }}</td>
+        <td>{{ r['Tarifs'] }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</body>
+</html>

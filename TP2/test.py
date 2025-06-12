@@ -1,164 +1,132 @@
+import csv
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException,ElementClickInterceptedException
-import time
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    TimeoutException,
+    ElementClickInterceptedException
+)
 
-
+# 1) Setup webdriver and wait
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service)
-driver.get("https://www.doctolib.fr/")
 wait = WebDriverWait(driver, 30)
 
+# 2) Go to Doctolib and reject cookies
+driver.get("https://www.doctolib.fr/")
 try:
-    reject_btn = wait.until(
-        EC.element_to_be_clickable((By.ID, "didomi-notice-disagree-button"))
-    )
-    reject_btn.click()
+    btn = wait.until(EC.element_to_be_clickable((By.ID, "didomi-notice-disagree-button")))
+    btn.click()
     wait.until(EC.invisibility_of_element_located((By.ID, "didomi-notice-disagree-button")))
 except:
     pass
 
-place_input = wait.until(
-    EC.element_to_be_clickable((By.CSS_SELECTOR, "input.searchbar-input.searchbar-place-input"))
-)
-place_input.clear()
-place_input.send_keys("Montpellier")
-
-wait.until(
-    EC.text_to_be_present_in_element_value(
-        (By.CSS_SELECTOR, "input.searchbar-input.searchbar-place-input"),
-        "Montpellier"
-    )
-)
-
-search_btn = wait.until(
-    EC.element_to_be_clickable((By.CSS_SELECTOR, "button.searchbar-submit-button.dl-button-primary"))
-)
+# 3) Enter “Montpellier” and search
+place = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "input.searchbar-input.searchbar-place-input")))
+place.clear()
+place.send_keys("Montpellier")
+wait.until(EC.text_to_be_present_in_element_value(
+    (By.CSS_SELECTOR, "input.searchbar-input.searchbar-place-input"),
+    "Montpellier"
+))
+search_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.searchbar-submit-button.dl-button-primary")))
 search_btn.click()
 
-total_results = wait.until(
-    EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-test='total-number-of-results']"))
-)
-print("Found results count:", total_results.text)
+# 4) Grab cards
+wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-test='total-number-of-results']")))
+cards = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".w-full")))
 
-cards = wait.until(
-    EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".w-full"))
-)
-print(f"Nombre de cartes trouvées : {len(cards)}")
-driver.implicitly_wait(1)
+# 5) Prepare CSV
+fieldnames = ["Nom", "Spécialité", "Adresse", "Assurance", "Disponibilités", "Type de consultation", "Tarifs"]
+rows = []
 seen = set()
+driver.implicitly_wait(1)
 
+# 6) Loop, limit to 10 entries
+for card in cards:
+    if len(rows) >= 10:
+        break
 
-for idx, card in enumerate(cards, start=1):
+    # — Nom
     try:
-
-        title = card.find_element(
-            By.CSS_SELECTOR,
-            ".dl-text.dl-text-body.dl-text-bold.dl-text-s.dl-text-primary-110"
-        ).text.strip()
+        title = card.find_element(By.CSS_SELECTOR, ".dl-text-bold.dl-text-primary-110").text.strip()
     except:
-        title = "❌ Nom non trouvé"
-
-    try:
-        addr_div = card.find_element(
-            By.CSS_SELECTOR,
-            "div.mt-8.gap-8.flex"
-        )
-        addr_lines = addr_div.find_elements(
-            By.CSS_SELECTOR,
-            "p.dl-text-body.dl-text-regular.dl-text-s.dl-text-neutral-130"
-        )
-        address = ", ".join([l.text.strip() for l in addr_lines if l.text.strip()])
-    except:
-        address = "❌ Adresse non trouvée"
-
-
-    try:
-        speciality = card.find_element(
-            By.CSS_SELECTOR,
-            ".dl-text.dl-text-body.dl-text-regular.dl-text-s.dl-text-neutral-130.dl-doctor-card-speciality-title"
-        ).text.strip()
-    except:
-        speciality = "❌ Spécialité non trouvée"
-
-    if title == "❌ Nom non trouvé" and speciality == "❌ Spécialité non trouvée":
         continue
 
-    
-
+    # — Spécialité
     try:
-       
+        speciality = card.find_element(By.CSS_SELECTOR, ".dl-doctor-card-speciality-title").text.strip()
+    except:
+        speciality = ""
 
-        avail_elements = card.find_elements(
+    key = (title, speciality)
+    if key in seen:
+        continue
+    seen.add(key)
+
+    # — Adresse
+    try:
+        addr_div = card.find_element(By.CSS_SELECTOR, "div.mt-8.gap-8.flex")
+        parts = addr_div.find_elements(By.CSS_SELECTOR, "p.dl-text-neutral-130")
+        address = ", ".join(p.text.strip() for p in parts if p.text.strip())
+    except:
+        address = ""
+
+    # — Assurance
+    try:
+        assurance = card.find_element(
             By.CSS_SELECTOR,
-            ".Tappable-inactive.availabilities-slot.availabilities-slot-desktop"
-        )
-        avail_texts = [a.text.strip() for a in avail_elements if a.text.strip()]
+            "div.mt-8.gap-8.flex > div.flex.flex-wrap.gap-x-4 > p.dl-text-neutral-130"
+        ).text.strip()
+    except NoSuchElementException:
+        assurance = ""
 
-        if avail_texts:
-            availabilities = " | ".join(avail_texts)
-        else:
-            nextinfo_elements = card.find_elements(
+    # — Disponibilités
+    try:
+        slots = card.find_elements(By.CSS_SELECTOR, ".availabilities-slot-desktop")
+        texts = [s.text.strip() for s in slots if s.text.strip()]
+        if not texts:
+            fallback = card.find_elements(
                 By.CSS_SELECTOR,
-                ".dl-text.dl-text-body.dl-text-regular.dl-text-s.dl-text-left.dl-text-primary-110"
+                ".dl-text-left.dl-text-primary-110, .dl-text-left.dl-text-neutral-130"
             )
-            nextinfo_texts = [e.text.strip() for e in nextinfo_elements if e.text.strip()]
+            texts = [f.text.strip() for f in fallback if f.text.strip()]
+        availabilities = " | ".join(texts)
+    except:
+        availabilities = ""
 
-            if nextinfo_texts:
-                availabilities = " | ".join(nextinfo_texts)
-            
-            else:
-                next130 = card.find_elements(
-                    By.CSS_SELECTOR,
-                    ".dl-text.dl-text-body.dl-text-regular.dl-text-s.dl-text-left.dl-text-neutral-130"
-                )
-                texts130 = [e.text.strip() for e in next130 if e.text.strip()]
+    # — Type de consultation
+    try:
+        card.find_element(By.XPATH, ".//svg//path[contains(@d, 'M10.25 4.625v6.75c0 .633')]")
+        consultation_type = "Visio"
+    except NoSuchElementException:
+        consultation_type = "Présentiel"
 
-                if texts130:
-                    availabilities = " | ".join(texts130)
-            
-                else:
-                     availabilities = "❌ Aucune disponibilité"
-
-
-    except Exception as e:
-        availabilities = f"❌ Erreur lors de l'extraction des disponibilités ({e})"
-
-    unique_key = (title, speciality)
-    if unique_key not in seen:
-        seen.add(unique_key)
-        print(f"{len(seen)}. {title} — {speciality} - {address}")
-        print(f"    ➤ Disponibilités : {availabilities}\n")
-    
-
-# 2) Fetch tarifs **only once**, inside this block
+    # — Tarifs
     tarif_output = "Indisponible"
     try:
-        rdv_link = card.find_element(By.CSS_SELECTOR, "a.dl-p-doctor-result-link")
-        driver.execute_script("arguments[0].scrollIntoView({block:'center'});", rdv_link)
+        link = card.find_element(By.CSS_SELECTOR, "a.dl-p-doctor-result-link")
+        driver.execute_script("arguments[0].scrollIntoView({block:'center'});", link)
         wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a.dl-p-doctor-result-link")))
-
         try:
-            rdv_link.click()
+            link.click()
         except ElementClickInterceptedException:
             time.sleep(1)
-            driver.execute_script("arguments[0].click();", rdv_link)
+            driver.execute_script("arguments[0].click();", link)
 
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.dl-profile-text")))
-
-        fee_divs = driver.find_elements(By.CSS_SELECTOR, "div.dl-profile-text.dl-profile-fee")
-        if not fee_divs:
-            tarif_output = "Indisponible"
-        else:
-            tarifs = []
-            for fee in fee_divs:
-                name   = fee.find_element(By.CSS_SELECTOR, ".dl-profile-fee-name").text.strip()
-                amount = fee.find_element(By.CSS_SELECTOR, ".dl-profile-fee-tag").text.strip()
-                tarifs.append(f"{name}: {amount}")
+        fee_divs = driver.find_elements(By.CSS_SELECTOR, "div.dl-profile-fee")
+        if fee_divs:
+            tarifs = [
+                f"{fee.find_element(By.CSS_SELECTOR, '.dl-profile-fee-name').text.strip()}: "
+                f"{fee.find_element(By.CSS_SELECTOR, '.dl-profile-fee-tag').text.strip()}"
+                for fee in fee_divs
+            ]
             valid = [t for t in tarifs if "In" in t]
             if valid:
                 tarif_output = " | ".join(valid)
@@ -166,9 +134,7 @@ for idx, card in enumerate(cards, start=1):
         driver.back()
         time.sleep(1)
         wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".w-full")))
-
-    except (NoSuchElementException, TimeoutException, ElementClickInterceptedException):
-        # leave tarif_output as "Indisponible"
+    except:
         try:
             driver.back()
             time.sleep(1)
@@ -176,10 +142,23 @@ for idx, card in enumerate(cards, start=1):
         except:
             pass
 
-    # 3) Print tarifs exactly once, here
-    print(f"    ➤ Tarifs      : {tarif_output}\n")
+    rows.append({
+        "Nom": title,
+        "Spécialité": speciality,
+        "Adresse": address,
+        "Assurance": assurance,
+        "Disponibilités": availabilities,
+        "Type de consultation": consultation_type,
+        "Tarifs": tarif_output
+    })
 
+# 7) Write CSV
+with open("doctolib_results.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
 
+print(f"Wrote {len(rows)} rows to doctolib_results.csv")
 
-time.sleep(200)
+time.sleep(2)
 driver.quit()
