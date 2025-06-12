@@ -48,11 +48,13 @@ cards = wait.until(
     EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".dl-card-content"))
 )
 print(f"Nombre de cartes trouvées : {len(cards)}")
-
+driver.implicitly_wait(1)
 seen = set()
+
 
 for idx, card in enumerate(cards, start=1):
     try:
+
         title = card.find_element(
             By.CSS_SELECTOR,
             ".dl-text.dl-text-body.dl-text-bold.dl-text-s.dl-text-primary-110"
@@ -72,6 +74,8 @@ for idx, card in enumerate(cards, start=1):
         continue
 
     try:
+       
+
         avail_elements = card.find_elements(
             By.CSS_SELECTOR,
             ".Tappable-inactive.availabilities-slot.availabilities-slot-desktop"
@@ -89,8 +93,19 @@ for idx, card in enumerate(cards, start=1):
 
             if nextinfo_texts:
                 availabilities = " | ".join(nextinfo_texts)
+            
             else:
-                availabilities = "❌ Aucune disponibilité"
+                next130 = card.find_elements(
+                    By.CSS_SELECTOR,
+                    ".dl-text.dl-text-body.dl-text-regular.dl-text-s.dl-text-left.dl-text-neutral-130"
+                )
+                texts130 = [e.text.strip() for e in next130 if e.text.strip()]
+
+                if texts130:
+                    availabilities = " | ".join(texts130)
+            
+                else:
+                     availabilities = "❌ Aucune disponibilité"
 
     except Exception as e:
         availabilities = f"❌ Erreur lors de l'extraction des disponibilités ({e})"
