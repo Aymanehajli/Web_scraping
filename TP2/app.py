@@ -5,17 +5,17 @@ import pandas as pd
 from flask import Flask, request, render_template, flash, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = "change_me"  # nécessaire pour flash()
+app.secret_key = "change_me" 
 
 CSV_PATH = 'doctolib_results.csv'
-SCRAPER_SCRIPT = 'test.py'   # votre script Selenium
+SCRAPER_SCRIPT = 'test.py'   
 
 def run_scraper():
     """Lance test.py pour (re)générer le CSV."""
-    # Supprime l'ancien CSV pour forcer la recréation
+    
     if os.path.exists(CSV_PATH):
         os.remove(CSV_PATH)
-    # Exécute le scraper. Il doit écrire doctolib_results.csv
+   
     try:
         subprocess.run(['python3', SCRAPER_SCRIPT], check=True)
     except subprocess.CalledProcessError as e:
@@ -26,19 +26,19 @@ def run_scraper():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        # 1) Relancer le scraper
+        
         success = run_scraper()
         if not success:
             return redirect(url_for('index'))
 
-        # 2) Charger le CSV tout frais
+       
         try:
             df = pd.read_csv(CSV_PATH)
         except Exception as e:
             flash(f"Impossible de lire le CSV : {e}", "error")
             return redirect(url_for('index'))
 
-        # 3) Récupérer filtres
+        
         specialty = request.form.get('specialty', '').strip().lower()
         assurance = request.form.get('assurance', '').strip().lower()
         consult   = request.form.get('consultation_type', '').strip().lower()
@@ -47,7 +47,7 @@ def index():
         min_price = request.form.get('min_price')
         max_price = request.form.get('max_price')
 
-        # 4) Appliquer filtres
+       
         if specialty:
             df = df[df['Spécialité'].str.lower().str.contains(specialty, na=False)]
         if assurance:
@@ -59,7 +59,6 @@ def index():
         if addr_exc:
             df = df[~df['Adresse'].str.lower().str.contains(addr_exc, na=False)]
 
-        # Extraire premier tarif en € pour filtrer les prix
         import re
         def extract_price(s):
             m = re.search(r'(\d+(?:\.\d+)?)\s*€', str(s))
@@ -81,7 +80,6 @@ def index():
         rows = df.to_dict(orient='records')
         count = len(df)
     else:
-        # GET initial : pas de données à afficher
         rows = []
         count = 0
 
