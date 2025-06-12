@@ -4,8 +4,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException,ElementClickInterceptedException
 import time
-import re
+
 
 service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service)
@@ -45,7 +46,7 @@ total_results = wait.until(
 print("Found results count:", total_results.text)
 
 cards = wait.until(
-    EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".dl-card-content"))
+    EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".w-full"))
 )
 print(f"Nombre de cartes trouvées : {len(cards)}")
 driver.implicitly_wait(1)
@@ -63,6 +64,20 @@ for idx, card in enumerate(cards, start=1):
         title = "❌ Nom non trouvé"
 
     try:
+        addr_div = card.find_element(
+            By.CSS_SELECTOR,
+            "div.mt-8.gap-8.flex"
+        )
+        addr_lines = addr_div.find_elements(
+            By.CSS_SELECTOR,
+            "p.dl-text-body.dl-text-regular.dl-text-s.dl-text-neutral-130"
+        )
+        address = ", ".join([l.text.strip() for l in addr_lines if l.text.strip()])
+    except:
+        address = "❌ Adresse non trouvée"
+
+
+    try:
         speciality = card.find_element(
             By.CSS_SELECTOR,
             ".dl-text.dl-text-body.dl-text-regular.dl-text-s.dl-text-neutral-130.dl-doctor-card-speciality-title"
@@ -72,6 +87,8 @@ for idx, card in enumerate(cards, start=1):
 
     if title == "❌ Nom non trouvé" and speciality == "❌ Spécialité non trouvée":
         continue
+
+    
 
     try:
        
@@ -107,14 +124,62 @@ for idx, card in enumerate(cards, start=1):
                 else:
                      availabilities = "❌ Aucune disponibilité"
 
+
     except Exception as e:
         availabilities = f"❌ Erreur lors de l'extraction des disponibilités ({e})"
 
     unique_key = (title, speciality)
     if unique_key not in seen:
         seen.add(unique_key)
-        print(f"{len(seen)}. {title} — {speciality}")
+        print(f"{len(seen)}. {title} — {speciality} - {address}")
         print(f"    ➤ Disponibilités : {availabilities}\n")
+    
+
+# 2) Fetch tarifs **only once**, inside this block
+    tarif_output = "Indisponible"
+    try:
+        rdv_link = card.find_element(By.CSS_SELECTOR, "a.dl-p-doctor-result-link")
+        driver.execute_script("arguments[0].scrollIntoView({block:'center'});", rdv_link)
+        wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a.dl-p-doctor-result-link")))
+
+        try:
+            rdv_link.click()
+        except ElementClickInterceptedException:
+            time.sleep(1)
+            driver.execute_script("arguments[0].click();", rdv_link)
+
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.dl-profile-text")))
+
+        fee_divs = driver.find_elements(By.CSS_SELECTOR, "div.dl-profile-text.dl-profile-fee")
+        if not fee_divs:
+            tarif_output = "Indisponible"
+        else:
+            tarifs = []
+            for fee in fee_divs:
+                name   = fee.find_element(By.CSS_SELECTOR, ".dl-profile-fee-name").text.strip()
+                amount = fee.find_element(By.CSS_SELECTOR, ".dl-profile-fee-tag").text.strip()
+                tarifs.append(f"{name}: {amount}")
+            valid = [t for t in tarifs if "In" in t]
+            if valid:
+                tarif_output = " | ".join(valid)
+
+        driver.back()
+        time.sleep(1)
+        wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".w-full")))
+
+    except (NoSuchElementException, TimeoutException, ElementClickInterceptedException):
+        # leave tarif_output as "Indisponible"
+        try:
+            driver.back()
+            time.sleep(1)
+            wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".w-full")))
+        except:
+            pass
+
+    # 3) Print tarifs exactly once, here
+    print(f"    ➤ Tarifs      : {tarif_output}\n")
+
+
 
 time.sleep(200)
 driver.quit()
