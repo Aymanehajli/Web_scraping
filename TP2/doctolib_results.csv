@@ -1,11 +1,11 @@
 Nom,Spécialité,Adresse,Assurance,Disponibilités,Type de consultation,Tarifs
-Centre de santé Presqu’île de Grenoble,Centre de santé,"86 Avenue des Martyrs, 38000 Grenoble",86 Avenue des Martyrs,14:30 | 14:45 | 15:00 | 15:15 | 09:15 | 09:45 | 10:00 | 10:15 | 18:15 | 18:30 | 18:45 | 19:00 | 09:00 | 09:15 | 09:30 | 09:45,Présentiel,Indisponible
-Medsoins 7/7 - Grenoble,Cabinet médical,"2 Rue Jean Macé, 38000 Grenoble",2 Rue Jean Macé,14:30 | 14:45 | 15:00 | 15:15 | 09:15 | 09:45 | 10:00 | 10:15 | 18:15 | 18:30 | 18:45 | 19:00 | 09:00 | 09:15 | 09:30 | 09:45,Présentiel,Indisponible
-Dr Nicolas MANZINI,Médecin généraliste,"6 Rue André Maginot, 38000 Grenoble",6 Rue André Maginot,,Présentiel,Injection d'Acide Hyaluronique (pour 1 seringue): 250 € à 300 €
-Dr Sophie CAZABAN,Médecin généraliste,"24 Bis Avenue Félix Viallet, 38000 Grenoble",24 Bis Avenue Félix Viallet,,Présentiel,Indisponible
-Dr Doreen SAUL,Médecin généraliste,"9 Rue du Docteur Mazet, 38000 Grenoble",9 Rue du Docteur Mazet,,Présentiel,Indisponible
-Dr Bruno DOLIDON,Médecin généraliste,"50 rue stalingrad, 38100 GRENOBLE",50 rue stalingrad,,Présentiel,Indisponible
-Dr Elise Dal Soglio,Médecin généraliste,"10 Rue de Belgrade, 38000 Grenoble",10 Rue de Belgrade,,Présentiel,Indisponible
-Dr Marie-Anne MONTEL,Médecin généraliste,"12 Avenue Félix Viallet, 38000 Grenoble",12 Avenue Félix Viallet,,Présentiel,Indisponible
-Dr Céline BOYOUD-GHIDOSSI,Médecin généraliste,"22 Place Louis Jouvet, 38100 Grenoble",22 Place Louis Jouvet,,Présentiel,Indisponible
+Medsoins 7/7 - Grenoble,Cabinet médical,"2 Rue Jean Macé, 38000 Grenoble",2 Rue Jean Macé,15:15 | 15:30 | 15:45 | 20:30 | 09:15 | 09:45 | 10:00 | 10:15 | 18:15 | 18:30 | 18:45 | 19:00 | 09:00 | 09:15 | 09:30 | 09:45 | 10:30 | 10:45 | 11:15 | 11:30 | 09:30 | 09:45 | 10:15 | 10:30,Présentiel,Indisponible
+Dr Nicolas MANZINI,Médecin généraliste,"6 Rue André Maginot, 38000 Grenoble",6 Rue André Maginot,10:30 | 10:45 | 11:15 | 11:30 | 09:30 | 09:45 | 10:15 | 10:30,Présentiel,Injection d'Acide Hyaluronique (pour 1 seringue): 250 € à 300 €
+Centre de santé Presqu’île de Grenoble,Centre de santé,"86 Avenue des Martyrs, 38000 Grenoble",86 Avenue des Martyrs,,Présentiel,Indisponible
+Dr Michael LEVY,Médecin généraliste,"18 Boulevard Maréchal Foch, 38000 Grenoble",18 Boulevard Maréchal Foch,,Présentiel,Indisponible
+Dr Claude Chaltiel,Médecin généraliste,"18 Boulevard Maréchal Foch, 38000 Grenoble",18 Boulevard Maréchal Foch,,Présentiel,Indisponible
+Dr Juliette ETOO,Médecin généraliste,"5 Rue Marcel Peretto, 38100 Grenoble",5 Rue Marcel Peretto,,Présentiel,Indisponible
+Dr Suleiman Dahshan,Médecin généraliste,"17 Rue Servan, 38000 Grenoble",17 Rue Servan,,Présentiel,Indisponible
+Dr Nicolas MEYER,Médecin généraliste,"12 Avenue Félix Viallet, 38000 Grenoble",12 Avenue Félix Viallet,,Présentiel,Indisponible
 Bruno Münger,Médecin généraliste,"6 Avenue Jean Perrot, 38000 Grenoble",6 Avenue Jean Perrot,,Présentiel,Indisponible
+Dr Damien Compois,Médecin généraliste,"3 Rue de la Liberté, 38000 Grenoble",3 Rue de la Liberté,,Présentiel,Indisponible

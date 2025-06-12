@@ -1,0 +1,126 @@
+/* style améliorable pour filter.html */
+
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    margin: 2em;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+  
+  form {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+  }
+  
+  form div {
+    margin-bottom: 1rem;
+  }
+  
+  form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  
+  form input[type="text"],
+  form input[type="number"],
+  form select {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ccd0d5;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+  }
+  
+  form input:focus,
+  form select:focus {
+    outline: none;
+    border-color: #5dade2;
+  }
+  
+  form button {
+    padding: 0.7rem 1.5rem;
+    background: #3498db;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  form button:hover {
+    background: #2980b9;
+  }
+  
+  /* Résultats */
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  
+  thead {
+    background: #ecf0f1;
+  }
+  
+  th, td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e1e4e8;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+  
+  th {
+    font-weight: 600;
+    color: #34495e;
+  }
+  
+  tbody tr:hover {
+    background: #f8fafa;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    thead {
+      display: none;
+    }
+    tr {
+      margin-bottom: 1rem;
+    }
+    td {
+      position: relative;
+      padding-left: 50%;
+    }
+    td:before {
+      content: attr(data-label);
+      position: absolute;
+      left: 1rem;
+      top: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+  

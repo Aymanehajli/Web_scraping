@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = "change_me" 
 
 CSV_PATH = 'doctolib_results.csv'
-SCRAPER_SCRIPT = 'test.py'   
+SCRAPER_SCRIPT = '/Users/aymanehajli/Desktop/Web_scraping/TP2/test.py'   
 
 def run_scraper():
     """Lance test.py pour (re)générer le CSV."""
